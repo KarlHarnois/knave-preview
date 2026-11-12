@@ -1,7 +1,7 @@
 (export accept-without-waiting bind-listener limit-read-wait
-        next-connection read-request-line sleep-milliseconds
-        tcp-listener tcp-stream wait-for-reads write-body
-        write-text)
+        limit-write-wait next-connection read-request-line
+        sleep-milliseconds tcp-listener tcp-stream
+        wait-for-reads write-body write-text)
 
 (deftype tcp-listener (rust "std::net::TcpListener"))
 
@@ -24,6 +24,11 @@
 
 (def limit-read-wait
   (rust "{0}.set_read_timeout(Some(std::time::Duration::from_millis({1})))"
+    (fn ((ref tcp-stream) u64)
+      (result unit io-error))))
+
+(def limit-write-wait
+  (rust "{0}.set_write_timeout(Some(std::time::Duration::from_millis({1})))"
     (fn ((ref tcp-stream) u64)
       (result unit io-error))))
 

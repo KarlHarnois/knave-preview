@@ -4,13 +4,15 @@
 (use response ->response content-type not-found
               response-head)
 
-(use socket limit-read-wait next-connection
+(use socket limit-read-wait limit-write-wait next-connection
             read-request-line wait-for-reads write-body
             write-text)
 
 (export answer-waiting-connections response-for)
 
 (def request-wait-milliseconds 250)
+
+(def response-wait-milliseconds 1000)
 
 (defn answer-waiting-connections (directory listener)
   (match (next-connection listener)
@@ -28,6 +30,7 @@
 (defn answer-connection (directory stream)
   (try (wait-for-reads stream))
   (try (limit-read-wait stream request-wait-milliseconds))
+  (try (limit-write-wait stream response-wait-milliseconds))
   (let (request-line (try (read-request-line stream)))
     (if (empty? request-line)
       (ok (do))
