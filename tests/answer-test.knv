@@ -29,3 +29,7 @@
 (deftest answers-a-missing-file-with-not-found
   (assert (= (:status (answer-to "GET /missing.html HTTP/1.1"))
              "404 Not Found")))
+
+(deftest redirects-a-doubled-slash-on-the-same-host
+  (assert (= (:location (answer-to "GET //docs HTTP/1.1"))
+             (some (str "/docs/")))))

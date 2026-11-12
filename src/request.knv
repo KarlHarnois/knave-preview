@@ -1,5 +1,5 @@
-(use strings after before contains? ends-with? find-from
-             starts-with?)
+(use strings before contains? ends-with? find-from
+             starts-with? trim-leading)
 
 (export request-file)
 
@@ -27,7 +27,7 @@
 
 (defn file-for-url (url-path)
   (if (safe-url? url-path)
-    (some (file-below-root (after url-path 1)))
+    (some (file-below-root (trim-leading url-path "/")))
     none))
 
 (defn safe-url? (url-path)

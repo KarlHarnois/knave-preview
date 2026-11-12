@@ -1,5 +1,5 @@
 (export after before contains? ends-with? find-from
-        starts-with?)
+        starts-with? trim-leading)
 
 (def starts-with?
   (rust "{0}.starts_with({1})"
@@ -8,6 +8,10 @@
 (def ends-with?
   (rust "{0}.ends_with({1})"
     (fn ((ref str) (ref str)) bool)))
+
+(def trim-leading
+  (rust "{0}.trim_start_matches({1})"
+    (fn ((ref str) (ref str)) (ref str))))
 
 (def contains?
   (rust "{0}.contains({1})"

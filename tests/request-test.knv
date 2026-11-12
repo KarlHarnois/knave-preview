@@ -32,3 +32,7 @@
 
 (deftest refuses-a-malformed-request
   (assert (= (request-file "") none)))
+
+(deftest collapses-leading-slashes
+  (assert (= (request-file "GET //docs HTTP/1.1")
+             (some (str "docs")))))
