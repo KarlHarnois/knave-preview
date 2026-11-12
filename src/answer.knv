@@ -57,7 +57,7 @@
 
 (defn directory-index (directory file)
   (if (directory? (as-str (str directory "/" file)))
-    (index-of (as-str (str file "/")))
+    (index-of file)
     (str file)))
 
 (defn file-response (directory file)

@@ -35,11 +35,14 @@
        (not (contains? url-path parent-segment))))
 
 (defn file-below-root (relative)
-  (if (or (empty? relative) (ends-with? relative "/"))
+  (if (directory-path? relative)
     (index-of relative)
     (str relative)))
 
 (defn index-of (directory)
-  (if (or (empty? directory) (ends-with? directory "/"))
+  (if (directory-path? directory)
     (str directory index-file)
     (str directory "/" index-file)))
+
+(defn directory-path? (path)
+  (or (empty? path) (ends-with? path "/")))
