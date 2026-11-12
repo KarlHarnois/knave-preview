@@ -17,11 +17,6 @@
 
 (def poll-milliseconds 50)
 
-(type serve
-  (where (a (b display))
-    (fn (preview (fn () (result a b)))
-      (result unit io-error))))
-
 (defn serve (settings build)
   (let (listener (try (listen (ref settings)))
         fingerprint (try (current-fingerprint (ref settings))))
