@@ -33,3 +33,7 @@
 (deftest redirects-a-doubled-slash-on-the-same-host
   (assert (= (:location (answer-to "GET //docs HTTP/1.1"))
              (some (str "/docs/")))))
+
+(deftest keeps-the-query-in-a-redirect
+  (assert (= (:location (answer-to "GET /docs?q=knave HTTP/1.1"))
+             (some (str "/docs/?q=knave")))))

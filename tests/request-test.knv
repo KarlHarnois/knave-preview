@@ -1,4 +1,4 @@
-(use request request-file)
+(use request request-file request-query)
 
 (deftest serves-the-root-index
   (assert (= (request-file "GET / HTTP/1.1")
@@ -36,3 +36,10 @@
 (deftest collapses-leading-slashes
   (assert (= (request-file "GET //docs HTTP/1.1")
              (some (str "docs")))))
+
+(deftest keeps-the-query-of-a-request
+  (assert (= (request-query "GET /search?q=knave#top HTTP/1.1")
+             "?q=knave")))
+
+(deftest has-no-query-without-a-question-mark
+  (assert (= (request-query "GET /search#top?q=knave HTTP/1.1") "")))

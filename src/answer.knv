@@ -1,5 +1,5 @@
 (use files directory? read-bytes)
-(use request request-file)
+(use request request-file request-query)
 (use response file-found not-found redirect response-head)
 
 (use socket limit-read-wait limit-write-wait next-connection
@@ -43,11 +43,14 @@
 (defn response-for (directory request-line)
   (match (request-file request-line)
     (none (not-found))
-    ((some file) (response-for-file directory (as-str file)))))
+    ((some file)
+     (response-for-file directory
+                        (as-str file)
+                        (as-str (request-query request-line))))))
 
-(defn response-for-file (directory file)
+(defn response-for-file (directory file query)
   (if (directory? (as-str (str directory "/" file)))
-    (redirect (str "/" file "/"))
+    (redirect (str "/" file "/" query))
     (file-response directory file)))
 
 (defn file-response (directory file)

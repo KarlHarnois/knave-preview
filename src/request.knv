@@ -1,7 +1,7 @@
 (use strings before contains? ends-with? find-from
              starts-with? trim-leading)
 
-(export request-file)
+(export request-file request-query)
 
 (def get-prefix "GET ")
 
@@ -10,20 +10,36 @@
 (def index-file "index.html")
 
 (defn request-file (request-line)
+  (match (request-target request-line)
+    (none none)
+    ((some target) (file-for-url (path-of-target target)))))
+
+(defn request-query (request-line)
+  (match (request-target request-line)
+    (none (str ""))
+    ((some target) (str (query-of target)))))
+
+(defn request-target (request-line)
   (if (starts-with? request-line get-prefix)
-    (file-for-request-target request-line)
+    (target-after-method request-line)
     none))
 
-(defn file-for-request-target (request-line)
+(defn target-after-method (request-line)
   (let (target-start (len get-prefix))
     (match (find-from request-line " " target-start)
       (none none)
       ((some target-end)
-       (file-for-url (path-of-target
-                       (subs request-line target-start target-end)))))))
+       (some (subs request-line target-start target-end))))))
 
 (defn path-of-target (target)
   (before (before target "?") "#"))
+
+(defn query-of (target)
+  (let (without-fragment (before target "#"))
+    (match (find-from without-fragment "?" 0)
+      (none "")
+      ((some start)
+       (subs without-fragment start (len without-fragment))))))
 
 (defn file-for-url (url-path)
   (if (safe-url? url-path)
