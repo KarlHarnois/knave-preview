@@ -31,7 +31,10 @@
                   " at http://"
                   (address (ref settings))
                   "/"))
-    (ok (run (ref settings) (ref listener) build fingerprint))))
+    (ok (run (ref settings)
+             (ref listener)
+             build
+             (ok fingerprint)))))
 
 (header-shape (serve))
 
@@ -43,20 +46,25 @@
 (defn address (settings)
   (str host ":" (:port settings)))
 
-(defn run (settings listener build fingerprint)
+(defn run (settings listener build watch)
   (answer-waiting-connections (as-str (:directory settings))
                               listener)
   (sleep-milliseconds poll-milliseconds)
-  (let (latest (latest-fingerprint settings (ref fingerprint)))
-    (if (= latest fingerprint)
-      (do)
-      (report-build settings (build)))
+  (let (latest (watch-state settings))
+    (cond
+      ((= latest watch) (do))
+      ((err? (ref latest)) (report-watch-failure (ref latest)))
+      (else (report-build settings (build))))
     (recur settings listener build latest)))
 
-(defn latest-fingerprint (settings fingerprint)
-  (match (current-fingerprint settings)
-    ((err _) (clone fingerprint))
-    ((ok current) current)))
+(defn watch-state (settings)
+  (map-err (current-fingerprint settings)
+    (fn (problem) (str problem))))
+
+(defn report-watch-failure (watch)
+  (match watch
+    ((err problem) (eprintln (str "watching failed: " problem)))
+    ((ok _) (do))))
 
 (defn current-fingerprint (settings)
   (fingerprint-directories (ref (:watched settings))))

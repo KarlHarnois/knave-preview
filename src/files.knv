@@ -1,7 +1,7 @@
 (export directory? files-under read-bytes)
 
 (def file-names
-  (rust "std::fs::read_dir({0}).and_then(|entries| entries.map(|entry| entry.map(|found| found.file_name().to_string_lossy().into_owned())).collect::<std::io::Result<Vec<String>>>())"
+  (rust "{{ let {!path} = {0}; std::fs::read_dir({!path}).and_then(|entries| entries.map(|entry| entry.map(|found| found.file_name().to_string_lossy().into_owned())).collect::<std::io::Result<Vec<String>>>()).map_err(|error| std::io::Error::new(error.kind(), String::from({!path}) + \": \" + &error.to_string())) }}"
     (fn ((ref str))
       (result (vec string) io-error))))
 
@@ -22,7 +22,8 @@
   (match (pop! pending)
     (none (ok found))
     ((some directory)
-     (let (names (try (file-names (as-str (str root "/" directory)))))
+     (let (listed (str root "/" directory)
+           names (try (file-names (as-str listed))))
        (for-each (iter names)
          (fn (name)
            (let (path (str directory name))
