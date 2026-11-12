@@ -1,3 +1,5 @@
+(module "Searches and slices text.")
+
 (export after before contains? ends-with? find-from
         starts-with?)
 

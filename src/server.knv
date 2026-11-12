@@ -6,6 +6,8 @@
 
 (use watch fingerprint-directories)
 
+(module "Runs the preview: answers requests and rebuilds when a watched file changes.")
+
 (export ->preview preview serve)
 
 (defstruct preview

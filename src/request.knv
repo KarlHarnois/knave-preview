@@ -1,6 +1,8 @@
 (use strings after before contains? ends-with? find-from
              starts-with?)
 
+(module "Maps a request line to the file it asks for.")
+
 (export index-of request-file)
 
 (def get-prefix "GET ")

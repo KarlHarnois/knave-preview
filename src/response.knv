@@ -1,5 +1,7 @@
 (use strings ends-with?)
 
+(module "Builds responses and the head that precedes their body.")
+
 (export ->response content-type not-found response-head)
 
 (defstruct response

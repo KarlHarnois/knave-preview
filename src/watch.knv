@@ -1,5 +1,7 @@
 (use files files-under vanished?)
 
+(module "Fingerprints watched directories by each file's modification time.")
+
 (export fingerprint-directories)
 
 (def modified-nanos

@@ -1,3 +1,5 @@
+(module "Binds, accepts, reads and writes TCP connections.")
+
 (export accept-without-waiting bind-listener limit-read-wait
         limit-write-wait next-connection read-request-line
         sleep-milliseconds tcp-listener tcp-stream
