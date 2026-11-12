@@ -1,0 +1,49 @@
+(export directory? files-under read-bytes vanished?)
+
+(def file-names
+  (rust "{{ let {!path} = {0}; std::fs::read_dir({!path}).and_then(|entries| entries.map(|entry| entry.map(|found| found.file_name().to_string_lossy().into_owned())).collect::<std::io::Result<Vec<String>>>()).map_err(|error| std::io::Error::new(error.kind(), String::from({!path}) + \": \" + &error.to_string())) }}"
+    (fn ((ref str))
+      (result (vec string) io-error))))
+
+(def directory?
+  (rust "std::path::Path::new({0}).is_dir()"
+    (fn ((ref str)) bool)))
+
+(def read-bytes
+  (rust "std::fs::read({0})"
+    (fn ((ref str))
+      (result (vec u8) io-error))))
+
+(def vanished?
+  (rust "{0}.kind() == std::io::ErrorKind::NotFound"
+    (fn ((ref io-error)) bool)))
+
+(defn files-under (root)
+  (let (pending (vec (str "")))
+    (collect-files! root pending (vec))))
+
+(defn collect-files! (root pending found)
+  (match (pop! pending)
+    (none (ok found))
+    ((some directory)
+     (let (names (try (names-in root directory)))
+       (for-each (iter names)
+         (fn (name)
+           (let (path (str directory name))
+             (if (directory? (as-str (str root "/" path)))
+               (push! pending (str path "/"))
+               (push! found path)))))
+       (recur root pending found)))))
+
+(defn names-in (root directory)
+  (let (listed (str root "/" directory))
+    (match (file-names (as-str listed))
+      ((err problem)
+       (skip-vanished-subdirectory directory problem))
+      ((ok names) (ok names)))))
+
+(defn skip-vanished-subdirectory (directory problem)
+  (if (and (not (empty? directory))
+           (vanished? (ref problem)))
+    (ok (vec))
+    (err problem)))

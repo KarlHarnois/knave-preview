@@ -1,0 +1,25 @@
+(use answer response-for)
+
+(def site "tests/site")
+
+(def text-of
+  (rust "String::from_utf8_lossy({0}).into_owned()"
+    (fn ((ref (vec u8))) string)))
+
+(defn answer-to (request-line)
+  (response-for site request-line))
+
+(deftest serves-a-file-from-the-directory
+  (let (answer (answer-to "GET /index.html HTTP/1.1"))
+    (assert (= (:status answer) "200 OK"))
+    (assert (= (text-of (ref (:body answer)))
+               "<p>home</p>\n"))))
+
+(deftest serves-the-index-of-a-directory-without-a-slash
+  (let (answer (answer-to "GET /docs HTTP/1.1"))
+    (assert (= (text-of (ref (:body answer)))
+               "<p>docs</p>\n"))))
+
+(deftest answers-a-missing-file-with-not-found
+  (assert (= (:status (answer-to "GET /missing.html HTTP/1.1"))
+             "404 Not Found")))

@@ -1,0 +1,29 @@
+(use response content-type response-head)
+
+(deftest names-the-html-content-type
+  (assert (= (content-type "index.html") "text/html; charset=utf-8")))
+
+(deftest names-the-javascript-content-type
+  (assert (= (content-type "grid-overlay.js")
+             "text/javascript; charset=utf-8")))
+
+(deftest names-the-font-content-type
+  (assert (= (content-type "iosevka-regular.woff2") "font/woff2")))
+
+(deftest names-the-xml-content-type
+  (assert (= (content-type "sitemap.xml")
+             "application/xml; charset=utf-8")))
+
+(deftest names-the-text-content-type
+  (assert (= (content-type "robots.txt") "text/plain; charset=utf-8")))
+
+(deftest serves-markdown-as-text
+  (assert (= (content-type "index.html.md")
+             "text/plain; charset=utf-8")))
+
+(deftest falls-back-to-a-binary-content-type
+  (assert (= (content-type "archive.zip") "application/octet-stream")))
+
+(deftest states-the-body-length
+  (assert (= (response-head "200 OK" "text/plain" 5)
+             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 5\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n")))

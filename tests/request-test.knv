@@ -1,0 +1,34 @@
+(use request request-file)
+
+(deftest serves-the-root-index
+  (assert (= (request-file "GET / HTTP/1.1")
+             (some (str "index.html")))))
+
+(deftest serves-a-directory-index
+  (assert (= (request-file "GET /docs/types/ HTTP/1.1")
+             (some (str "docs/types/index.html")))))
+
+(deftest serves-a-file
+  (assert (= (request-file "GET /style.css HTTP/1.1")
+             (some (str "style.css")))))
+
+(deftest ignores-a-query-string
+  (assert (= (request-file "GET /style.css?v=1 HTTP/1.1")
+             (some (str "style.css")))))
+
+(deftest ignores-a-fragment
+  (assert (= (request-file "GET /a.css#top HTTP/1.1")
+             (some (str "a.css")))))
+
+(deftest stops-at-a-fragment-before-a-query
+  (assert (= (request-file "GET /a.css#top?x=1 HTTP/1.1")
+             (some (str "a.css")))))
+
+(deftest refuses-a-path-above-the-root
+  (assert (= (request-file "GET /../secret HTTP/1.1") none)))
+
+(deftest refuses-other-methods
+  (assert (= (request-file "POST / HTTP/1.1") none)))
+
+(deftest refuses-a-malformed-request
+  (assert (= (request-file "") none)))

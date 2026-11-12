@@ -1,0 +1,66 @@
+(use answer answer-waiting-connections)
+(use prelude/macros header-shape)
+
+(use socket accept-without-waiting bind-listener
+            sleep-milliseconds)
+
+(use watch fingerprint-directories)
+
+(export ->preview preview serve)
+
+(defstruct preview
+  :directory string
+  :port u16
+  :watched (vec string))
+
+(def host "127.0.0.1")
+
+(def poll-milliseconds 50)
+
+(defn serve (settings build)
+  (let (listener (try (listen (ref settings)))
+        fingerprint (try (current-fingerprint (ref settings))))
+    (report-build (ref settings) (build))
+    (println (str "Previewing "
+                  (:directory settings)
+                  " at http://"
+                  (address (ref settings))
+                  "/"))
+    (ok (run (ref settings)
+             (ref listener)
+             build
+             (ok fingerprint)))))
+
+(header-shape (serve))
+
+(defn listen (settings)
+  (let (listener (try (bind-listener (as-str (address settings)))))
+    (try (accept-without-waiting (ref listener)))
+    (ok listener)))
+
+(defn address (settings)
+  (str host ":" (:port settings)))
+
+(defn run (settings listener build watch)
+  (answer-waiting-connections (as-str (:directory settings))
+                              listener)
+  (sleep-milliseconds poll-milliseconds)
+  (let (latest (watch-state settings))
+    (if (= latest watch)
+      (do)
+      (match (ref latest)
+        ((err problem) (eprintln (str "watching failed: " problem)))
+        ((ok _) (report-build settings (build)))))
+    (recur settings listener build latest)))
+
+(defn watch-state (settings)
+  (map-err (current-fingerprint settings)
+    (fn (problem) (str problem))))
+
+(defn current-fingerprint (settings)
+  (fingerprint-directories (ref (:watched settings))))
+
+(defn report-build (settings outcome)
+  (match outcome
+    ((err problem) (eprintln (str "build failed: " problem)))
+    ((ok _) (println (str "Built " (:directory settings))))))
