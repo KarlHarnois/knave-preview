@@ -1,6 +1,8 @@
 (use files directory? read-bytes)
 (use request index-of request-file)
-(use response content-type response-head)
+
+(use response ->response content-type not-found
+              response-head)
 
 (use socket limit-read-wait next-connection
             read-request-line wait-for-reads write-body
@@ -8,16 +10,7 @@
 
 (export answer-waiting-connections response-for)
 
-(defstruct response
-  :status string
-  :file-type string
-  :body (vec u8))
-
 (def request-wait-milliseconds 250)
-
-(def text-bytes
-  (rust "{0}.as_bytes().to_vec()"
-    (fn ((ref str)) (vec u8))))
 
 (defn answer-waiting-connections (directory listener)
   (match (next-connection listener)
@@ -41,12 +34,12 @@
       (send-response stream
                      (ref (response-for directory (as-str request-line)))))))
 
-(defn send-response (stream answer)
-  (let (head (response-head (as-str (:status answer))
-                            (as-str (:file-type answer))
-                            (len (:body answer))))
+(defn send-response (stream reply)
+  (let (head (response-head (as-str (:status reply))
+                            (as-str (:file-type reply))
+                            (len (:body reply))))
     (try (write-text stream (as-str head)))
-    (write-body stream (ref (:body answer)))))
+    (write-body stream (ref (:body reply)))))
 
 (defn response-for (directory request-line)
   (match (request-file request-line)
@@ -67,8 +60,3 @@
      (->response :status (str "200 OK")
                  :file-type (str (content-type file))
                  :body body))))
-
-(defn not-found ()
-  (->response :status (str "404 Not Found")
-              :file-type (str "text/plain; charset=utf-8")
-              :body (text-bytes "Not found\n")))

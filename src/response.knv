@@ -1,8 +1,17 @@
 (use strings ends-with?)
 
-(export content-type response-head)
+(export ->response content-type not-found response-head)
+
+(defstruct response
+  :status string
+  :file-type string
+  :body (vec u8))
 
 (def text-type "text/plain; charset=utf-8")
+
+(def text-bytes
+  (rust "{0}.as_bytes().to_vec()"
+    (fn ((ref str)) (vec u8))))
 
 (defn content-type (file)
   (cond
@@ -21,3 +30,8 @@
        "\r\n" "Content-Length: " body-length "\r\n"
        "Cache-Control: no-store\r\n"
        "Connection: close\r\n\r\n"))
+
+(defn not-found ()
+  (->response :status (str "404 Not Found")
+              :file-type (str text-type)
+              :body (text-bytes "Not found\n")))
