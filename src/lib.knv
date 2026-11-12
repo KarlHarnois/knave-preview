@@ -1,5 +1,5 @@
-(use server ->preview preview serve)
-
 (module "Serves a built directory on 127.0.0.1 and rebuilds it when its sources change.")
+
+(use server ->preview preview serve)
 
 (export ->preview preview serve)

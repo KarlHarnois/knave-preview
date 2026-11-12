@@ -1,3 +1,6 @@
+(module
+  "Answers each waiting connection with a file from the preview directory.")
+
 (use files directory? read-bytes)
 (use request index-of request-file)
 
@@ -7,9 +10,6 @@
 (use socket limit-read-wait limit-write-wait next-connection
             read-request-line wait-for-reads write-body
             write-text)
-
-(module
-  "Answers each waiting connection with a file from the preview directory.")
 
 (export answer-waiting-connections response-for)
 

@@ -1,6 +1,6 @@
-(use strings ends-with?)
-
 (module "Builds responses and the head that precedes their body.")
+
+(use strings ends-with?)
 
 (export ->response content-type not-found response-head)
 

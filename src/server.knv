@@ -1,3 +1,5 @@
+(module "Runs the preview: answers requests and rebuilds when a watched file changes.")
+
 (use answer answer-waiting-connections)
 (use prelude/macros header-shape)
 
@@ -5,8 +7,6 @@
             sleep-milliseconds)
 
 (use watch fingerprint-directories)
-
-(module "Runs the preview: answers requests and rebuilds when a watched file changes.")
 
 (export ->preview preview serve)
 
