@@ -2,13 +2,11 @@
 
 [![CI](https://github.com/KarlHarnois/knave-preview/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/KarlHarnois/knave-preview/actions/workflows/ci.yml)
 
-A [Knave](https://github.com/knave-lang/knave) library that serves a built directory at `127.0.0.1` and rebuilds it when its sources change.
+A [Knave](https://github.com/knave-lang/knave) library that serves a built directory on `127.0.0.1` and rebuilds it when a watched file changes. Refresh the page to see the new build.
 
-The server answers `GET` requests only, one at a time. It sends `Cache-Control: no-store`, so a refresh shows the latest build. The server does not reload the browser.
+## Use
 
-## Install
-
-Add the library to the `libraries` of your `project.knv`:
+Add the library to your `project.knv`:
 
 ```lisp
 (defproject my-site
@@ -17,14 +15,12 @@ Add the library to the `libraries` of your `project.knv`:
                    :rev "<commit>")))
 ```
 
-## Use
-
-Pass `serve` the settings and your build function:
+Call `serve` with the settings and your build function:
 
 ```lisp
 (use knave-preview ->preview serve)
 
-(deftask serve ()
+(deftask preview ()
   "Serves the site at http://127.0.0.1:8000 and rebuilds it on change."
   (serve
     (->preview :directory (str "public")
@@ -32,16 +28,6 @@ Pass `serve` the settings and your build function:
                :watched (vec (str "content") (str "templates")))
     build-site))
 ```
-
-| Setting | Meaning |
-| --- | --- |
-| `:directory` | The build output that the server answers from |
-| `:port` | The port on `127.0.0.1` |
-| `:watched` | The source directories to watch |
-
-The build function takes no arguments and returns a `result` whose error can be displayed. `serve` runs it once at start, then again each time a file under `:watched` changes. It prints whether each build succeeded or failed.
-
-A URL that ends in `/` serves that directory's `index.html`. A URL that contains `..` gets a 404.
 
 ## Develop
 
