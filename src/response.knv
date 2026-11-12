@@ -1,10 +1,12 @@
 (use strings ends-with?)
 
-(export ->response content-type not-found response-head)
+(export content-type file-found not-found redirect
+        response-head)
 
 (defstruct response
   :status string
   :file-type string
+  :location (option string)
   :body (vec u8))
 
 (def text-type "text/plain; charset=utf-8")
@@ -25,13 +27,37 @@
      text-type)
     (else "application/octet-stream")))
 
-(defn response-head (status file-type body-length)
-  (str "HTTP/1.1 " status "\r\n" "Content-Type: " file-type
-       "\r\n" "Content-Length: " body-length "\r\n"
+(defn response-head (reply)
+  (str "HTTP/1.1 "
+       (:status reply)
+       "\r\n" "Content-Type: "
+       (:file-type reply)
+       "\r\n" "Content-Length: "
+       (len (:body reply))
+       "\r\n"
+       (location-line reply)
        "Cache-Control: no-store\r\n"
        "Connection: close\r\n\r\n"))
+
+(defn location-line (reply)
+  (match (ref (:location reply))
+    (none (str ""))
+    ((some target) (str "Location: " target "\r\n"))))
+
+(defn file-found (file body)
+  (->response :status (str "200 OK")
+              :file-type (str (content-type file))
+              :location none
+              :body body))
+
+(defn redirect (target)
+  (->response :status (str "301 Moved Permanently")
+              :file-type (str text-type)
+              :location (some target)
+              :body (text-bytes "Moved\n")))
 
 (defn not-found ()
   (->response :status (str "404 Not Found")
               :file-type (str text-type)
+              :location none
               :body (text-bytes "Not found\n")))

@@ -1,4 +1,5 @@
-(use response content-type response-head)
+(use response content-type file-found redirect
+              response-head)
 
 (deftest names-the-html-content-type
   (assert (= (content-type "index.html") "text/html; charset=utf-8")))
@@ -25,5 +26,9 @@
   (assert (= (content-type "archive.zip") "application/octet-stream")))
 
 (deftest states-the-body-length
-  (assert (= (response-head "200 OK" "text/plain" 5)
-             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 5\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n")))
+  (assert (= (response-head (ref (file-found "a.txt" (vec 104 105))))
+             "HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 2\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n")))
+
+(deftest names-the-redirect-location
+  (assert (= (response-head (ref (redirect (str "/docs/"))))
+             "HTTP/1.1 301 Moved Permanently\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: 6\r\nLocation: /docs/\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n")))

@@ -1,7 +1,7 @@
 (use strings after before contains? ends-with? find-from
              starts-with?)
 
-(export index-of request-file)
+(export request-file)
 
 (def get-prefix "GET ")
 
@@ -39,10 +39,7 @@
     (index-of relative)
     (str relative)))
 
-(defn index-of (directory)
-  (if (directory-path? directory)
-    (str directory index-file)
-    (str directory "/" index-file)))
+(defn index-of (directory) (str directory index-file))
 
 (defn directory-path? (path)
   (or (empty? path) (ends-with? path "/")))
