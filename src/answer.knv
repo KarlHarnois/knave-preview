@@ -1,5 +1,3 @@
-(module "Answers each waiting connection with a file from the preview directory, or a 404.")
-
 (use files directory? read-bytes)
 (use request index-of request-file)
 

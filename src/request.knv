@@ -1,5 +1,3 @@
-(module "Maps a GET request line to the file it asks for, refusing paths with `..` and mapping directories to their index.html.")
-
 (use strings after before contains? ends-with? find-from
              starts-with?)
 

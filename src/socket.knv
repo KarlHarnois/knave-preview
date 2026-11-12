@@ -1,5 +1,3 @@
-(module "Binds listeners, accepts connections, reads and writes them, and sleeps between polls.")
-
 (export accept-without-waiting bind-listener limit-read-wait
         limit-write-wait next-connection read-request-line
         sleep-milliseconds tcp-listener tcp-stream

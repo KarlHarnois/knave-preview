@@ -1,5 +1,3 @@
-(module "Fingerprints watched directories by each file's modification time.")
-
 (use files files-under vanished?)
 
 (export fingerprint-directories)

@@ -1,5 +1,3 @@
-(module "Lists, reads and checks files on disk.")
-
 (export directory? files-under read-bytes vanished?)
 
 (def file-names
