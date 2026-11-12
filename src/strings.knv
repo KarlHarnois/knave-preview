@@ -1,0 +1,30 @@
+(export after before contains? ends-with? find-from
+        starts-with?)
+
+(def starts-with?
+  (rust "{0}.starts_with({1})"
+    (fn ((ref str) (ref str)) bool)))
+
+(def ends-with?
+  (rust "{0}.ends_with({1})"
+    (fn ((ref str) (ref str)) bool)))
+
+(def contains?
+  (rust "{0}.contains({1})"
+    (fn ((ref str) (ref str)) bool)))
+
+(def find-from
+  (rust "{0}[{2}..].find({1}).map(|offset| offset + {2})"
+    (fn ((ref str) (ref str) usize)
+      (option usize))))
+
+(defn after (text start)
+  (subs text start (len text)))
+
+(type before
+  (fn ((ref str) (ref str)) (ref str)))
+
+(defn before (text separator)
+  (match (find-from text separator 0)
+    (none text)
+    ((some found) (subs text 0 found))))

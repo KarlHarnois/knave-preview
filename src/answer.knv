@@ -1,0 +1,74 @@
+(use files directory? read-bytes)
+(use request index-of request-file)
+(use response content-type response-head)
+
+(use socket limit-read-wait next-connection
+            read-request-line wait-for-reads write-body
+            write-text)
+
+(export answer-waiting-connections)
+
+(defstruct response
+  :status string
+  :file-type string
+  :body (vec u8))
+
+(def request-wait-milliseconds 250)
+
+(def text-bytes
+  (rust "{0}.as_bytes().to_vec()"
+    (fn ((ref str)) (vec u8))))
+
+(defn answer-waiting-connections (directory listener)
+  (match (next-connection listener)
+    ((err problem) (report-request-failure problem))
+    ((ok none) (do))
+    ((ok (some stream))
+     (match (answer-connection directory (ref stream))
+       ((err problem) (report-request-failure problem))
+       ((ok _) (do)))
+     (recur directory listener))))
+
+(defn report-request-failure (problem)
+  (eprintln (str "preview request failed: " problem)))
+
+(defn answer-connection (directory stream)
+  (try (wait-for-reads stream))
+  (try (limit-read-wait stream request-wait-milliseconds))
+  (let (request-line (try (read-request-line stream)))
+    (if (empty? request-line)
+      (ok (do))
+      (send-response stream
+                     (ref (response-for directory (as-str request-line)))))))
+
+(defn send-response (stream answer)
+  (let (head (response-head (as-str (:status answer))
+                            (as-str (:file-type answer))
+                            (len (:body answer))))
+    (try (write-text stream (as-str head)))
+    (write-body stream (ref (:body answer)))))
+
+(defn response-for (directory request-line)
+  (match (request-file request-line)
+    (none (not-found))
+    ((some file)
+     (file-response directory
+                    (as-str (directory-index directory (as-str file)))))))
+
+(defn directory-index (directory file)
+  (if (directory? (as-str (str directory "/" file)))
+    (index-of (as-str (str file "/")))
+    (str file)))
+
+(defn file-response (directory file)
+  (match (read-bytes (as-str (str directory "/" file)))
+    ((err _) (not-found))
+    ((ok body)
+     (->response :status (str "200 OK")
+                 :file-type (str (content-type file))
+                 :body body))))
+
+(defn not-found ()
+  (->response :status (str "404 Not Found")
+              :file-type (str "text/plain; charset=utf-8")
+              :body (text-bytes "Not found\n")))

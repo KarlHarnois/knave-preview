@@ -1,0 +1,45 @@
+(use strings after before contains? ends-with? find-from
+             starts-with?)
+
+(export index-of request-file)
+
+(def get-prefix "GET ")
+
+(def parent-segment "..")
+
+(def index-file "index.html")
+
+(defn request-file (request-line)
+  (if (starts-with? request-line get-prefix)
+    (file-for-request-target request-line)
+    none))
+
+(defn file-for-request-target (request-line)
+  (let (target-start (len get-prefix))
+    (match (find-from request-line " " target-start)
+      (none none)
+      ((some target-end)
+       (file-for-url (path-of-target
+                       (subs request-line target-start target-end)))))))
+
+(defn path-of-target (target)
+  (before (before target "?") "#"))
+
+(defn file-for-url (url-path)
+  (if (safe-url? url-path)
+    (some (file-below-root (after url-path 1)))
+    none))
+
+(defn safe-url? (url-path)
+  (and (starts-with? url-path "/")
+       (not (contains? url-path parent-segment))))
+
+(defn file-below-root (relative)
+  (if (or (empty? relative) (ends-with? relative "/"))
+    (index-of relative)
+    (str relative)))
+
+(defn index-of (directory)
+  (if (or (empty? directory) (ends-with? directory "/"))
+    (str directory index-file)
+    (str directory "/" index-file)))

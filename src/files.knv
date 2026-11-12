@@ -1,0 +1,32 @@
+(export directory? files-under read-bytes)
+
+(def file-names
+  (rust "std::fs::read_dir({0}).and_then(|entries| entries.map(|entry| entry.map(|found| found.file_name().to_string_lossy().into_owned())).collect::<std::io::Result<Vec<String>>>())"
+    (fn ((ref str))
+      (result (vec string) io-error))))
+
+(def directory?
+  (rust "std::path::Path::new({0}).is_dir()"
+    (fn ((ref str)) bool)))
+
+(def read-bytes
+  (rust "std::fs::read({0})"
+    (fn ((ref str))
+      (result (vec u8) io-error))))
+
+(defn files-under (root)
+  (let (pending (vec (str "")))
+    (collect-files! root pending (vec))))
+
+(defn collect-files! (root pending found)
+  (match (pop! pending)
+    (none (ok found))
+    ((some directory)
+     (let (names (try (file-names (as-str (str root "/" directory)))))
+       (for-each (iter names)
+         (fn (name)
+           (let (path (str directory name))
+             (if (directory? (as-str (str root "/" path)))
+               (push! pending (str path "/"))
+               (push! found path)))))
+       (recur root pending found)))))
