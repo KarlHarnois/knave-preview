@@ -31,8 +31,6 @@ Call `serve` with the settings and your build function:
     build-site))
 ```
 
-The build function takes no arguments and returns a `result`.
-
 ## Develop
 
 Run `direnv allow` once to load the [Nix](https://nixos.org/download/) dev shell, then use these commands:
