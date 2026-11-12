@@ -26,10 +26,11 @@ Pass `serve` the settings and your build function:
 
 (deftask serve ()
   "Serves the site at http://127.0.0.1:8000 and rebuilds it on change."
-  (serve (->preview :directory (str "public")
-                    :port 8000
-                    :watched (vec (str "content") (str "templates")))
-         build-site))
+  (serve
+    (->preview :directory (str "public")
+               :port 8000
+               :watched (vec (str "content") (str "templates")))
+    build-site))
 ```
 
 | Setting | Meaning |

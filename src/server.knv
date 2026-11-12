@@ -1,4 +1,5 @@
 (use answer answer-waiting-connections)
+(use prelude/macros header-shape)
 
 (use socket accept-without-waiting bind-listener
             sleep-milliseconds)
@@ -31,6 +32,8 @@
                   (address (ref settings))
                   "/"))
     (ok (run (ref settings) (ref listener) build fingerprint))))
+
+(header-shape (serve))
 
 (defn listen (settings)
   (let (listener (try (bind-listener (as-str (address settings)))))
