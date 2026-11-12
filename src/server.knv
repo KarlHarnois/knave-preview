@@ -46,20 +46,16 @@
                               listener)
   (sleep-milliseconds poll-milliseconds)
   (let (latest (watch-state settings))
-    (cond
-      ((= latest watch) (do))
-      ((err? (ref latest)) (report-watch-failure (ref latest)))
-      (else (report-build settings (build))))
+    (if (= latest watch)
+      (do)
+      (match (ref latest)
+        ((err problem) (eprintln (str "watching failed: " problem)))
+        ((ok _) (report-build settings (build)))))
     (recur settings listener build latest)))
 
 (defn watch-state (settings)
   (map-err (current-fingerprint settings)
     (fn (problem) (str problem))))
-
-(defn report-watch-failure (watch)
-  (match watch
-    ((err problem) (eprintln (str "watching failed: " problem)))
-    ((ok _) (do))))
 
 (defn current-fingerprint (settings)
   (fingerprint-directories (ref (:watched settings))))
