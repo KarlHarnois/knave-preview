@@ -66,3 +66,7 @@
   (let (directory (scratch-directory "dangling"))
     (unwrap-ok (link-to-nothing (as-str (str directory "/.#page.md"))))
     (assert (ok? (ref (fingerprint-directories (ref (vec directory))))))))
+
+(deftest reports-a-missing-watched-directory
+  (let (directories (vec (str "tests/no-such-directory")))
+    (assert (err? (ref (fingerprint-directories (ref directories)))))))
