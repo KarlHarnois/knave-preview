@@ -1,4 +1,4 @@
-(module "Serves a built directory on 127.0.0.1 and rebuilds it when its sources change.")
+(module "Serves a built directory on 127.0.0.1 and rebuilds it when a watched file changes.")
 
 (use server ->preview preview serve)
 
