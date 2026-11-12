@@ -20,3 +20,40 @@
     (assert (and (contains? (as-str fingerprint) "tests/fixtures/sample.md@")
                  (contains? (as-str fingerprint)
                             "tests/other-fixtures/other.md@")))))
+
+(def recreate-directory
+  (rust "{{ let {!dir} = {0}; let _ = std::fs::remove_dir_all({!dir}); std::fs::create_dir_all({!dir}) }}"
+    (fn ((ref str)) (result unit io-error))))
+
+(def write-file
+  (rust "std::fs::write({0}, \"page\")"
+    (fn ((ref str)) (result unit io-error))))
+
+(def set-modified-seconds
+  (rust "std::fs::File::options().write(true).open({0}).and_then(|file| file.set_modified(std::time::UNIX_EPOCH + std::time::Duration::from_secs({1})))"
+    (fn ((ref str) u64)
+      (result unit io-error))))
+
+(defn scratch-directory (name)
+  (let (directory (str "target/watch-test/" name))
+    (unwrap-ok (recreate-directory (as-str directory)))
+    directory))
+
+(defn write-page (directory name)
+  (unwrap-ok (write-file (as-str (str directory "/" name)))))
+
+(deftest changes-when-a-file-is-added
+  (let (directory (scratch-directory "added"))
+    (write-page (as-str directory) "first.md")
+    (let (before (fingerprint-of (vec (clone directory))))
+      (write-page (as-str directory) "second.md")
+      (assert (not (= before (fingerprint-of (vec directory))))))))
+
+(deftest changes-when-a-file-is-modified
+  (let (directory (scratch-directory "modified")
+        page (str directory "/page.md"))
+    (write-page (as-str directory) "page.md")
+    (unwrap-ok (set-modified-seconds (as-str page) 1))
+    (let (before (fingerprint-of (vec (clone directory))))
+      (unwrap-ok (set-modified-seconds (as-str page) 2))
+      (assert (not (= before (fingerprint-of (vec directory))))))))
