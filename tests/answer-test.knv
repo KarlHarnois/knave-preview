@@ -15,11 +15,25 @@
     (assert (= (text-of (ref (:body answer)))
                "<p>home</p>\n"))))
 
-(deftest serves-the-index-of-a-directory-without-a-slash
+(deftest redirects-a-directory-without-a-slash
   (let (answer (answer-to "GET /docs HTTP/1.1"))
+    (assert (= (:status answer) "301 Moved Permanently"))
+    (assert (= (:location answer)
+               (some (str "/docs/"))))))
+
+(deftest serves-the-index-of-a-directory-with-a-slash
+  (let (answer (answer-to "GET /docs/ HTTP/1.1"))
     (assert (= (text-of (ref (:body answer)))
                "<p>docs</p>\n"))))
 
 (deftest answers-a-missing-file-with-not-found
   (assert (= (:status (answer-to "GET /missing.html HTTP/1.1"))
              "404 Not Found")))
+
+(deftest redirects-a-doubled-slash-on-the-same-host
+  (assert (= (:location (answer-to "GET //docs HTTP/1.1"))
+             (some (str "/docs/")))))
+
+(deftest keeps-the-query-in-a-redirect
+  (assert (= (:location (answer-to "GET /docs?q=knave HTTP/1.1"))
+             (some (str "/docs/?q=knave")))))

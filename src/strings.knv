@@ -1,5 +1,5 @@
-(export after before contains? ends-with? find-from
-        starts-with?)
+(export before contains? ends-with? find-from starts-with?
+        trim-leading)
 
 (def starts-with?
   (rust "{0}.starts_with({1})"
@@ -9,6 +9,10 @@
   (rust "{0}.ends_with({1})"
     (fn ((ref str) (ref str)) bool)))
 
+(def trim-leading
+  (rust "{0}.trim_start_matches({1})"
+    (fn ((ref str) (ref str)) (ref str))))
+
 (def contains?
   (rust "{0}.contains({1})"
     (fn ((ref str) (ref str)) bool)))
@@ -17,9 +21,6 @@
   (rust "{0}[{2}..].find({1}).map(|offset| offset + {2})"
     (fn ((ref str) (ref str) usize)
       (option usize))))
-
-(defn after (text start)
-  (subs text start (len text)))
 
 (type before
   (fn ((ref str) (ref str)) (ref str)))

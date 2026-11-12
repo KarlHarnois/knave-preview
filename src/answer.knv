@@ -1,8 +1,6 @@
 (use files directory? read-bytes)
-(use request index-of request-file)
-
-(use response ->response content-type not-found
-              response-head)
+(use request request-file request-query)
+(use response file-found not-found redirect response-head)
 
 (use socket limit-read-wait limit-write-wait next-connection
             read-request-line wait-for-reads write-body
@@ -38,9 +36,7 @@
                      (ref (response-for directory (as-str request-line)))))))
 
 (defn send-response (stream reply)
-  (let (head (response-head (as-str (:status reply))
-                            (as-str (:file-type reply))
-                            (len (:body reply))))
+  (let (head (response-head reply))
     (try (write-text stream (as-str head)))
     (write-body stream (ref (:body reply)))))
 
@@ -48,18 +44,16 @@
   (match (request-file request-line)
     (none (not-found))
     ((some file)
-     (file-response directory
-                    (as-str (directory-index directory (as-str file)))))))
+     (response-for-file directory
+                        (as-str file)
+                        (as-str (request-query request-line))))))
 
-(defn directory-index (directory file)
+(defn response-for-file (directory file query)
   (if (directory? (as-str (str directory "/" file)))
-    (index-of file)
-    (str file)))
+    (redirect (str "/" file "/" query))
+    (file-response directory file)))
 
 (defn file-response (directory file)
   (match (read-bytes (as-str (str directory "/" file)))
     ((err _) (not-found))
-    ((ok body)
-     (->response :status (str "200 OK")
-                 :file-type (str (content-type file))
-                 :body body))))
+    ((ok body) (file-found file body))))
