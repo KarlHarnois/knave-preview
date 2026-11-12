@@ -34,6 +34,10 @@
     (fn ((ref str) u64)
       (result unit io-error))))
 
+(def link-to-nothing
+  (rust "std::os::unix::fs::symlink(\"missing-target\", {0})"
+    (fn ((ref str)) (result unit io-error))))
+
 (defn scratch-directory (name)
   (let (directory (str "target/watch-test/" name))
     (unwrap-ok (recreate-directory (as-str directory)))
@@ -57,3 +61,8 @@
     (let (before (fingerprint-of (vec (clone directory))))
       (unwrap-ok (set-modified-seconds (as-str page) 2))
       (assert (not (= before (fingerprint-of (vec directory))))))))
+
+(deftest stamps-a-dangling-symlink
+  (let (directory (scratch-directory "dangling"))
+    (unwrap-ok (link-to-nothing (as-str (str directory "/.#page.md"))))
+    (assert (ok? (ref (fingerprint-directories (ref (vec directory))))))))
