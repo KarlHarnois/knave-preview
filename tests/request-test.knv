@@ -41,5 +41,5 @@
   (assert (= (request-query "GET /search?q=knave#top HTTP/1.1")
              "?q=knave")))
 
-(deftest has-no-query-without-a-question-mark
+(deftest ignores-a-question-mark-in-the-fragment
   (assert (= (request-query "GET /search#top?q=knave HTTP/1.1") "")))
