@@ -62,10 +62,12 @@
       (unwrap-ok (set-modified-seconds (as-str page) 2))
       (assert (not (= before (fingerprint-of (vec directory))))))))
 
-(deftest stamps-a-dangling-symlink
+(deftest skips-a-dangling-symlink
   (let (directory (scratch-directory "dangling"))
-    (unwrap-ok (link-to-nothing (as-str (str directory "/.#page.md"))))
-    (assert (ok? (ref (fingerprint-directories (ref (vec directory))))))))
+    (write-page (as-str directory) "page.md")
+    (let (before (fingerprint-of (vec (clone directory))))
+      (unwrap-ok (link-to-nothing (as-str (str directory "/.#page.md"))))
+      (assert (= before (fingerprint-of (vec directory)))))))
 
 (deftest reports-a-missing-watched-directory
   (let (directories (vec (str "tests/no-such-directory")))

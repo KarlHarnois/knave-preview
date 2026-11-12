@@ -3,7 +3,7 @@
 (export fingerprint-directories)
 
 (def modified-nanos
-  (rust "{{ let {!path} = {0}; std::fs::metadata({!path}).or_else(|_| std::fs::symlink_metadata({!path})).and_then(|found| found.modified()).map(|modified| modified.duration_since(std::time::UNIX_EPOCH).map_or(0, |elapsed| elapsed.as_nanos())).map_err(|error| std::io::Error::new(error.kind(), String::from({!path}) + \": \" + &error.to_string())) }}"
+  (rust "{{ let {!path} = {0}; std::fs::metadata({!path}).and_then(|found| found.modified()).map(|modified| modified.duration_since(std::time::UNIX_EPOCH).map_or(0, |elapsed| elapsed.as_nanos())).map_err(|error| std::io::Error::new(error.kind(), String::from({!path}) + \": \" + &error.to_string())) }}"
     (fn ((ref str)) (result u128 io-error))))
 
 (defn fingerprint-directories (directories)
