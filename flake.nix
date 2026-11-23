@@ -2,7 +2,7 @@
   description = "knave-preview, a local preview server for static site builds";
 
   inputs = {
-    knave.url = "github:knave-lang/knave/v0.14.21";
+    knave.url = "github:knave-lang/knave/v0.21.0";
     nixpkgs.follows = "knave/nixpkgs";
   };
 

@@ -1,1 +1,1 @@
-(defproject knave-preview)
+(defproject knave-preview :knave "0.21.0")

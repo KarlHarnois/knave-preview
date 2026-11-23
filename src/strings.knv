@@ -11,16 +11,18 @@
 
 (def trim-leading
   (rust "{0}.trim_start_matches({1})"
-    (fn ((ref str) (ref str)) (ref str))))
+    (where ('a)
+      (fn ((ref 'a str) (ref str))
+        (ref 'a str)))))
 
 (def contains?
   (rust "{0}.contains({1})"
     (fn ((ref str) (ref str)) bool)))
 
 (def find-from
-  (rust "{0}[{2}..].find({1}).map(|offset| offset + {2})"
-    (fn ((ref str) (ref str) usize)
-      (option usize))))
+  (rust "{0}[usize::try_from({2}).expect(\"find-from takes a position of 0 or more\")..].find({1}).map(|offset| offset as i64 + {2})"
+    (fn ((ref str) (ref str) int)
+      (option int))))
 
 (type before
   (fn ((ref str) (ref str)) (ref str)))
